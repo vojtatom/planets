@@ -76,7 +76,7 @@ def draw_ring(setup, coord_rings, draw) :
 		offset = center - ring[1]
 		ring[1] = center - (offset * setup['tilt'])
 		ring[3] = center + (offset * setup['tilt'])
-		draw.ellipse(ring, outline=setup['colors']['compl'])
+		draw.ellipse(ring, outline=tuple(setup['colors']['compl']))
 
 
 def create_rings(dist, setup) :
@@ -91,7 +91,7 @@ def create_rings(dist, setup) :
 
 
 def draw_rings(x, setup, image) :
-	dist = setup['dist'] / (x + 1)
+	dist = setup['dist']  / (x + 1)
 
 	rings = Image.new('RGBA', image.size, (0,0,0,0))
 	draw = ImageDraw.Draw(rings)
@@ -116,19 +116,19 @@ def draw_shadow(setup, image, base, shadow) :
 	shad_geom[0] += transform
 	shad_geom[2] -= transform
 	
-	draw.chord(setup['planet'], *dark_half, fill=shadow)
-	draw.ellipse(shad_geom, fill=middle_color)
+	draw.chord(setup['planet'], *dark_half, fill=tuple(shadow))
+	draw.ellipse(shad_geom, fill=tuple(middle_color))
 
 
 def draw_planet(setup, image, base) :
 	draw = ImageDraw.Draw(image)
-	draw.ellipse(setup['planet'], fill=base)
+	draw.ellipse(setup['planet'], fill=tuple(base))
 
 
 def draw_background(setup) :
 	canvas = setup['canvas']
 
-	image = Image.new('RGBA', canvas, setup['colors']['back'])
+	image = Image.new('RGBA', canvas, tuple(setup['colors']['back']))
 	background = Image.new('RGBA', canvas, (0,0,0,0))
 	draw = ImageDraw.Draw(background)
 
@@ -142,16 +142,31 @@ def draw_background(setup) :
 
 	return Image.alpha_composite(image, background)
 
+
 def draw_text(setup, planet, image) :
 	draw = ImageDraw.Draw(image)
 	font = ImageFont.truetype("font.ttf", int(setup['canvas'][1] / 40))
-	name = [ x for x in planet[0:4]]
-
-	for x in planet[4] :
-		name.append(x)
-	name = ''.join([ str(hex(x)[2:]).upper() for x in name ])
+	name = planet_to_hex(planet)
 
 	draw.text((setup['canvas'][0] / 20, setup['canvas'][1] * 8 / 9),"planet {}".format(name),(255,255,255),font=font)
+
+
+def planet_to_hex(planet) :
+	name = [ x for x in planet[0:4]]
+	for x in planet[4] :
+		name.append(x)
+	name = ''.join([ str(hex(x)[2:]).upper() if len(str(hex(x)[2:])) == 2 else "0" + str(hex(x)[2:]).upper() for x in name ])
+	return name
+
+def hex_to_planet(hex) :
+	try:
+		planet = [ int(hex[2 * x:2 * x + 2], 16) for x in range(len(hex) // 2) ]
+		planet[4] = (planet[4], planet[5], planet[6])
+		del planet[5:]
+	except :
+		print("unable to convert to planet format")
+		quit()
+	return planet
 
 
 def create_planet(setup) :
@@ -175,16 +190,18 @@ def hilo(a, b, c):
 
 def complement(r, g, b):
     k = hilo(r, g, b)
-    return tuple(int(k - u / 1.2) for u in (r, g, b))
+    return [ int(k - u / 1.2) for u in (r, g, b) ]
 
 
 def colors_setup(setup) :
 	color = setup['colors']['base']
-	setup['colors']['back'] = (*tuple(int(x * 0.05) for x in color ), 255)
-	setup['colors']['shadow'] = (*tuple(int(x * 0.5) for x in color ), 255)
-	setup['colors']['compl'] = (*complement(*color), 255)
-	setup['colors']['compl_dark'] = (*tuple(int(x * 0.5) for x in complement(*color)), 255)
-	setup['colors']['base'] = (*color, 255)
+	setup['colors']['back'] = [ int(x * 0.05) for x in color ]
+	setup['colors']['shadow'] =  [ int(x * 0.5) for x in color ]
+	setup['colors']['compl'] = [ x for x in complement(*color) ]
+	setup['colors']['compl_dark'] = [ int(x * 0.5) for x in complement(*color)]
+	setup['colors']['base'] = [ x for x in color ]
+	for x in setup['colors'] :
+		setup['colors'][x].append(255)
 
 
 def create_setup(planet, view) :
@@ -209,7 +226,6 @@ def planet(planet, view, name) :
 	draw_planet(setup, image, setup['colors']['base'])
 	draw_shadow(setup, image, setup['colors']['base'], setup['colors']['shadow'])
 	bit_array = create_bit(setup)
-	print(bit_array)
 	for x in reversed(range(setup['ring_count'])) :
 		if bit_array[x] == 1 :
 			image = draw_rings(x, setup, image)
@@ -222,11 +238,26 @@ def planet(planet, view, name) :
 	resized.save(name + ".png")
 
 
-st_planet = (randint(15, 255), randint(0, 7), 255, randint(0, 255), \
-			(randint(0, 255), randint(0, 255), randint(0, 255)))
-st_scene = ((1920, 1080), randint(0, 255), random() * 0.4 + 0.2)
-print(st_planet, st_scene)
-name = ''.join(choice(string.ascii_uppercase + string.digits) for _ in range(10))
-name = 'test'
-print('created', name)
-planet(st_planet, st_scene, name)
+def random_planet() :
+	size = randint(15, 255)
+	ring_count = randint(0, 7)
+	distance = 255
+	angle = randint(0, 255)
+	color = (randint(0, 255), randint(0, 255), randint(0, 255))
+	return (size, ring_count, distance, angle, color)
+
+
+def scene() :
+	dimensions = (1920, 1080)
+	shadow = randint(0, 255)
+	tilt = random() * 0.4 + 0.2
+	return (dimensions, shadow, tilt)
+
+
+my_planet = random_planet()
+#my_planet = hex_to_planet("4207FF42424242")
+my_scene = scene()
+print(my_planet)
+name = planet_to_hex(my_planet)
+print(name, hex_to_planet(name))
+planet(my_planet, my_scene, name)
