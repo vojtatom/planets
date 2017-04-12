@@ -9,12 +9,15 @@ def vary_angle(angle, seed) :
 	seed = 1 / abs(431 / (((seed * 997 + angle * 997) % 431) + 1))
 	return angle - 0.2 + seed * 0.4
 
+
 def vary_step(seed, seedB) :
 	seed = 1 / abs(997 / (((seed * 991 + seedB * 223) % 997) + 1))
 	return seed
 
+
 def vary_bit(seed, seedB, seedC, seedD) :
 	return (int(255 * seedB + 255 * seedC + 255 * seedD) >> seed) & 1
+
 
 def create_bit(setup) :
 	arr =  [ vary_bit(x, setup['size'], setup['dist'], setup['angle']) for x in range(setup['ring_count']) ]
@@ -141,12 +144,14 @@ def draw_background(setup) :
 
 def draw_text(setup, planet, image) :
 	draw = ImageDraw.Draw(image)
-	font = ImageFont.truetype("font.ttf", 50)
+	font = ImageFont.truetype("font.ttf", int(setup['canvas'][1] / 40))
 	name = [ x for x in planet[0:4]]
+
 	for x in planet[4] :
 		name.append(x)
-	print(name);
-	draw.text((setup['canvas'][0] / 20, setup['canvas'][1] * 8 / 9),"planet A3BC9E2B1F836C",(255,255,255),font=font)
+	name = ''.join([ str(hex(x)[2:]).upper() for x in name ])
+
+	draw.text((setup['canvas'][0] / 20, setup['canvas'][1] * 8 / 9),"planet {}".format(name),(255,255,255),font=font)
 
 
 def create_planet(setup) :
@@ -219,7 +224,7 @@ def planet(planet, view, name) :
 
 st_planet = (randint(15, 255), randint(0, 7), 255, randint(0, 255), \
 			(randint(0, 255), randint(0, 255), randint(0, 255)))
-st_scene = ((960, 540), randint(0, 255), random() * 0.4 + 0.2)
+st_scene = ((1920, 1080), randint(0, 255), random() * 0.4 + 0.2)
 print(st_planet, st_scene)
 name = ''.join(choice(string.ascii_uppercase + string.digits) for _ in range(10))
 name = 'test'
