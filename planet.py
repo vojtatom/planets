@@ -248,16 +248,14 @@ def random_planet() :
 
 
 def scene() :
-	dimensions = (1920, 1080)
-	shadow = randint(0, 255)
-	tilt = random() * 0.4 + 0.2
+	dimensions = (800, 1000)
+	shadow = randint(0, 60)
+	tilt = random() * 0.1 + 0.2
 	return (dimensions, shadow, tilt)
 
 
 my_planet = random_planet()
-#my_planet = hex_to_planet("4207FF42424242")
 my_scene = scene()
-print(my_planet)
 name = planet_to_hex(my_planet)
 print(name, hex_to_planet(name))
 planet(my_planet, my_scene, name)
