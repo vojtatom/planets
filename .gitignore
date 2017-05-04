@@ -6,4 +6,5 @@
 !Procfile
 !requirements.txt
 !runtime.txt
+!README.md
 !generate_logo.py
