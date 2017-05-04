@@ -41,8 +41,9 @@ class bot() :
             seconds_since_midnight = (time.time() - last_midnight)
 
             #### SETUP AREA ####
-            self.sleep_time = 60                #how long to sleep since last call
-            start_time = 14 * 60 + 22 * 60 * 60 # what time of day to start
+            self.sleep_time = 3 * 60 * 60       #how long to sleep since last call
+            start_time = 10 * 60 * 60           #what time of day to start
+            self.sleep_step = 15 * 60           #incremental sleep
             ####
 
             expected_start = last_midnight + start_time
@@ -89,10 +90,15 @@ class bot() :
             self.media_tweet(file_name)
             self.next_wake += self.sleep_time
             print(">>   setting alarm on",  str(format_time(self.next_wake)))
-            time.sleep(self.next_wake - time.time())
+            while self.next_wake - time.time() > 30 :
+                sleep_time = self.next_wake - time.time() if self.next_wake - time.time() < self.sleep_step else self.sleep_step
+                print(">>   still alive, it's", str(format_time(time.time())), "- time to sleep for", sleep_time, "seconds")
+                time.sleep(sleep_time) 
+
 
 
 
 
 planet_dreamer = bot()
 planet_dreamer.rutine()
+
