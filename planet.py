@@ -1,5 +1,4 @@
-from random import random, randint, choice
-from pprint import pprint
+from random import random, randint
 from PIL import Image, ImageDraw, ImageFont
 from copy import copy
 import string
@@ -247,15 +246,14 @@ def random_planet() :
 	return (size, ring_count, distance, angle, color)
 
 
+def generate_shadow() :
+	if randint(0, 1) :
+		return randint(5, 30) if randint(0, 1) else randint(225, 250)
+	else :
+		return randint(100, 115) if randint(0, 1) else randint(139, 154)
+
 def scene() :
-	dimensions = (800, 1000)
-	shadow = randint(0, 60)
-	tilt = random() * 0.1 + 0.2
+	dimensions = (1200, 750)
+	shadow = generate_shadow()
+	tilt = random() * 0.2 + 0.1
 	return (dimensions, shadow, tilt)
-
-
-my_planet = random_planet()
-my_scene = scene()
-name = planet_to_hex(my_planet)
-print(name, hex_to_planet(name))
-planet(my_planet, my_scene, name)
