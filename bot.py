@@ -41,11 +41,11 @@ class bot() :
             seconds_since_midnight = (time.time() - last_midnight)
 
             #### SETUP AREA ####
-            self.sleep_time = 3 * 60 * 60       #how long to sleep since last call
-            start_time = 10 * 60 * 60           #what time of day to start
+            self.sleep_time = 4 * 60 * 60       #how long to sleep since last call
             self.sleep_step = 15 * 60           #incremental sleep
             ####
 
+            start_time = ((seconds_since_midnight // self.sleep_time) + 1) * self.sleep_time
             expected_start = last_midnight + start_time
             self.next_wake = expected_start if expected_start + 60 > time.time() else expected_start + 24 * 60 * 60
             print(">>   start scheduled on", str(format_time(self.next_wake)))
@@ -85,15 +85,15 @@ class bot() :
 
     def rutine(self) :
         while True :
+            while self.next_wake - time.time() > 30 :
+                sleep_time = self.next_wake - time.time() if self.next_wake - time.time() < self.sleep_step else self.sleep_step
+                print(">>   alive at", str(format_time(time.time())), "- sleep", sleep_time, "seconds - scheduled", str(format_time(self.next_wake)))
+                time.sleep(sleep_time) 
             print("++   we are awake and it's", str(format_time(time.time())), "- time to tweet!")
             file_name = self.create_image()
             self.media_tweet(file_name)
             self.next_wake += self.sleep_time
             print(">>   setting alarm on",  str(format_time(self.next_wake)))
-            while self.next_wake - time.time() > 30 :
-                sleep_time = self.next_wake - time.time() if self.next_wake - time.time() < self.sleep_step else self.sleep_step
-                print(">>   still alive, it's", str(format_time(time.time())), "- time to sleep for", sleep_time, "seconds")
-                time.sleep(sleep_time) 
 
 
 
