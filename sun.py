@@ -30,7 +30,7 @@ def apply_noise(image, setup) :
 	for i, pixel in enumerate(list_of_pixels) :
 		if pixel != (0, 0, 0, 0) :
 			noise = generator.OctavePerlin((i % width) / coef, i / (height * coef), 0, 1, 5)
-			new_pixel = [ int(x * noise) for x in pixel[:3] ]
+			new_pixel = [ int(x * (1 + noise)) for x in pixel[:3] ]
 			new_pixel.append(pixel[3])
 			list_of_pixels[i] = tuple(new_pixel)
 
@@ -42,16 +42,17 @@ def apply_noise(image, setup) :
 def apply_ray_effect(sun_image, setup) :
 	canvas = setup['canvas']
 	width, height = setup['canvas'][0], setup['canvas'][1]
-	applyed_image = Image.new('RGBA', canvas, (0,0,0,0))
-	decay = 0.96815
+	decay = 0.8
 	density = 1.2
-	samples = 64
+	samples = 128
 	center = [ x / 2 for x in setup['canvas'] ]
 
 	list_of_pixels = list(sun_image.getdata())
 
 	new_image = []
+	print("starting postprocessing...")
 	for y in range(height) :
+		print("\rjob completed {0:.2f}%".format(round(100 * (y / height), 2)), flush=True, end="")
 		for x in range(width) :
 			tc = [x, y]
 			delta = [ (x - center[0]) / (samples * density), (y - center[1]) / (samples * density) ]
@@ -77,13 +78,11 @@ def draw_sun(image, setup) :
 	sun_image = Image.new('RGBA', canvas, (0,0,0,0))
 	draw = ImageDraw.Draw(sun_image)
 	draw.ellipse(setup['sun'], fill=tuple(setup['color']['base']))
+	
 	sun_image = apply_noise(sun_image, setup)
 	sun_image = apply_ray_effect(sun_image, setup)
-
-
-
-
-	return sun_image
+	
+	return Image.alpha_composite(image, sun_image)
 
 def create_sun(setup) :
 	canvas, size = setup['canvas'], setup['size']
@@ -101,8 +100,8 @@ def sun_setup(setup) :
 	tmp_setup['color'] = {}
 	tmp_setup['color']['base'] = setup[2]
 	tmp_setup['color']['back'] = [ int(x * 0.05) for x in setup[2] ]
-	tmp_setup['canvas'] = setup[0]
-	tmp_setup['size'] = setup[1] / 255
+	tmp_setup['canvas'] =  [ x * 2 for x in setup[0] ]
+	tmp_setup['size'] = setup[1] / (255 * 2)
 	return tmp_setup
 
 def sun(setup) :
@@ -110,9 +109,12 @@ def sun(setup) :
 	create_sun(setup)
 	image = draw_background(setup)
 	image = draw_sun(image, setup)
-	image.save("test.png")
+
+	canvas = [ int(x / 2) for x in setup['canvas'] ]
+	resized = image.resize(canvas, Image.ANTIALIAS)
+	resized.save("test.png")
 
 
-setup = ((800, 400), 128, (180, 120, 100))
+setup = ((1200, 750), 128, (180, 120, 100))
 sun(setup)
 
