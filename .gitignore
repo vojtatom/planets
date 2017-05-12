@@ -8,3 +8,5 @@
 !runtime.txt
 !README.md
 !generate_logo.py
+!sun.py
+!perlin.py
