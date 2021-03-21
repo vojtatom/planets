@@ -1,8 +1,9 @@
 import planet
+import secrets
 
 def create_image() :
     print(">>   creating planet values")
-    my_planet = planet.hex_to_planet("8A05FF1BD9A8AB")
+    my_planet = planet.hex_to_planet(secrets.token_hex(7))
     print("++   planet", my_planet)
     print(">>   creating scene")
     my_scene = ((1500, 500), 235, 0.2784557339318898)
@@ -16,4 +17,3 @@ def create_image() :
 
 
 create_image()
-
